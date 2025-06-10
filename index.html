@@ -1,27 +1,28 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>محادثة خاصة</title>
-  <link rel="stylesheet" href="ura.css" />
+  <meta charset="UTF-8">
+  <title>شات مباشر بين جهازين - WebRTC</title>
+  <link rel="stylesheet" href="ura2.css">
 </head>
 <body>
-  <div id="login-screen">
-    <h2>ادخل معلوماتك</h2>
-    <input type="text" id="yourName" placeholder="اسمك المميز" />
-    <input type="text" id="friendName" placeholder="اسم الشخص الآخر" />
-    <input type="text" id="chatCode" placeholder="شيفرة المحادثة" />
-    <button onclick="joinChat()">ابدأ المحادثة</button>
-  </div>
 
-  <div id="chat-screen" style="display:none">
-    <h2>الدردشة بين <span id="you"></span> و <span id="friend"></span></h2>
-    <div id="messages"></div>
-    <input type="text" id="messageInput" placeholder="اكتب رسالة..." />
-    <button onclick="sendMessage()">إرسال</button>
-  </div>
+<h2>شات مباشر بين جهازين (WebRTC)</h2>
 
-  <script src="ura.js"></script>
+<div>
+  <button onclick="createConnection()">ابدأ الاتصال</button>
+  <textarea id="offer" placeholder="انسخ هذا الكود وارسله للطرف الآخر"></textarea>
+  <textarea id="answer" placeholder="ضع هنا الكود من الطرف الآخر"></textarea>
+  <button onclick="setAnswer()">ربط الاتصال</button>
+  <button onclick="receiveManualOffer()">استقبال العرض</button>
+</div>
+
+<div>
+  <div id="messages"></div>
+  <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter') sendMessage()">
+  <button onclick="sendMessage()">إرسال</button>
+</div>
+
+<script src="ura3.js"></script>
 </body>
 </html>
