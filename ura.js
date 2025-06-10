@@ -1,65 +1,72 @@
-let yourName, friendName, chatCode, roomId;
-let messagesDiv;
+let localConnection;
+let remoteConnection;
+let dataChannel;
 
-function joinChat() {
-  yourName = document.getElementById('yourName').value.trim();
-  friendName = document.getElementById('friendName').value.trim();
-  chatCode = document.getElementById('chatCode').value.trim();
+async function createConnection() {
+  localConnection = new RTCPeerConnection();
+  dataChannel = localConnection.createDataChannel("chat");
 
-  if (!yourName || !friendName || !chatCode) {
-    alert("الرجاء تعبئة جميع الحقول.");
-    return;
-  }
+  dataChannel.onmessage = (event) => {
+    const msg = document.createElement('div');
+    msg.textContent = "الطرف الآخر: " + event.data;
+    document.getElementById('messages').appendChild(msg);
+  };
 
-  // توليد معرف الغرفة (مشفر بطريقة بسيطة)
-  roomId = btoa(yourName + friendName + chatCode);
+  const offer = await localConnection.createOffer();
+  await localConnection.setLocalDescription(offer);
 
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('chat-screen').style.display = 'block';
+  localConnection.onicecandidate = (event) => {
+    if (event.candidate === null) {
+      document.getElementById("offer").value = JSON.stringify(localConnection.localDescription);
+    }
+  };
+}
 
-  document.getElementById('you').innerText = yourName;
-  document.getElementById('friend').innerText = friendName;
-  messagesDiv = document.getElementById('messages');
+async function setAnswer() {
+  const answerText = document.getElementById("answer").value;
+  const remoteDesc = new RTCSessionDescription(JSON.parse(answerText));
+  await localConnection.setRemoteDescription(remoteDesc);
+}
 
-  loadMessages();
+async function receiveOffer(offerText) {
+  remoteConnection = new RTCPeerConnection();
+
+  remoteConnection.ondatachannel = (event) => {
+    const receiveChannel = event.channel;
+    receiveChannel.onmessage = (e) => {
+      const msg = document.createElement('div');
+      msg.textContent = "الطرف الآخر: " + e.data;
+      document.getElementById('messages').appendChild(msg);
+    };
+    dataChannel = receiveChannel;
+  };
+
+  const desc = new RTCSessionDescription(JSON.parse(offerText));
+  await remoteConnection.setRemoteDescription(desc);
+
+  const answer = await remoteConnection.createAnswer();
+  await remoteConnection.setLocalDescription(answer);
+
+  remoteConnection.onicecandidate = (event) => {
+    if (event.candidate === null) {
+      document.getElementById("offer").value = JSON.stringify(remoteConnection.localDescription);
+    }
+  };
+}
+
+function receiveManualOffer() {
+  const offerText = document.getElementById("answer").value;
+  receiveOffer(offerText);
 }
 
 function sendMessage() {
-  const input = document.getElementById('messageInput');
-  const msg = input.value.trim();
-  if (!msg) return;
-
-  const message = {
-    name: yourName,
-    text: msg,
-    time: new Date().toLocaleTimeString()
-  };
-
-  const saved = localStorage.getItem(roomId);
-  let chat = saved ? JSON.parse(saved) : [];
-  chat.push(message);
-  localStorage.setItem(roomId, JSON.stringify(chat));
-
-  input.value = "";
-  loadMessages();
+  const input = document.getElementById("messageInput");
+  const message = input.value;
+  if (message && dataChannel && dataChannel.readyState === "open") {
+    dataChannel.send(message);
+    const msg = document.createElement('div');
+    msg.textContent = "أنت: " + message;
+    document.getElementById('messages').appendChild(msg);
+    input.value = "";
+  }
 }
-
-function loadMessages() {
-  const saved = localStorage.getItem(roomId);
-  let chat = saved ? JSON.parse(saved) : [];
-
-  messagesDiv.innerHTML = "";
-  chat.forEach(m => {
-    const div = document.createElement('div');
-    div.className = 'message';
-    div.innerText = `${m.name} (${m.time}):\n${m.text}`;
-    messagesDiv.appendChild(div);
-  });
-
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-// تحديث المحادثة تلقائياً كل 3 ثواني
-setInterval(() => {
-  if (roomId) loadMessages();
-}, 3000);
