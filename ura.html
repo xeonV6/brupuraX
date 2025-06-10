@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>محادثة خاصة</title>
+  <link rel="stylesheet" href="ura.css" />
+</head>
+<body>
+  <div id="login-screen">
+    <h2>ادخل معلوماتك</h2>
+    <input type="text" id="yourName" placeholder="اسمك المميز" />
+    <input type="text" id="friendName" placeholder="اسم الشخص الآخر" />
+    <input type="text" id="chatCode" placeholder="شيفرة المحادثة" />
+    <button onclick="joinChat()">ابدأ المحادثة</button>
+  </div>
+
+  <div id="chat-screen" style="display:none">
+    <h2>الدردشة بين <span id="you"></span> و <span id="friend"></span></h2>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="اكتب رسالة..." />
+    <button onclick="sendMessage()">إرسال</button>
+  </div>
+
+  <script src="ura.js"></script>
+</body>
+</html>
