@@ -1,72 +1,145 @@
-let localConnection;
-let remoteConnection;
-let dataChannel;
+let currentConnection = null;
+let currentChannel = null;
+let currentContact = null;
 
-async function createConnection() {
-  localConnection = new RTCPeerConnection();
-  dataChannel = localConnection.createDataChannel("chat");
+// تحميل الأصدقاء من التخزين
+let contacts = JSON.parse(localStorage.getItem("contacts")) || {};
+updateContactList();
 
-  dataChannel.onmessage = (event) => {
-    const msg = document.createElement('div');
-    msg.textContent = "الطرف الآخر: " + event.data;
-    document.getElementById('messages').appendChild(msg);
+// إضافة صديق جديد
+function addContact() {
+  const name = document.getElementById("contactName").value.trim();
+  const offer = document.getElementById("contactOffer").value.trim();
+  if (!name || !offer) return alert("يرجى إدخال الاسم والعرض.");
+
+  contacts[name] = {
+    offer: offer,
+    messages: []
   };
 
-  const offer = await localConnection.createOffer();
-  await localConnection.setLocalDescription(offer);
-
-  localConnection.onicecandidate = (event) => {
-    if (event.candidate === null) {
-      document.getElementById("offer").value = JSON.stringify(localConnection.localDescription);
-    }
-  };
+  localStorage.setItem("contacts", JSON.stringify(contacts));
+  updateContactList();
+  document.getElementById("contactName").value = "";
+  document.getElementById("contactOffer").value = "";
 }
 
-async function setAnswer() {
-  const answerText = document.getElementById("answer").value;
-  const remoteDesc = new RTCSessionDescription(JSON.parse(answerText));
-  await localConnection.setRemoteDescription(remoteDesc);
+// تحديث القائمة اليمنى
+function updateContactList() {
+  const list = document.getElementById("contactList");
+  list.innerHTML = "";
+  for (let name in contacts) {
+    const li = document.createElement("li");
+    li.textContent = name;
+    li.onclick = () => connectTo(name);
+    list.appendChild(li);
+  }
 }
 
-async function receiveOffer(offerText) {
-  remoteConnection = new RTCPeerConnection();
+// الاتصال بشخص
+async function connectTo(name) {
+  if (currentConnection) {
+    currentConnection.close();
+    currentChannel = null;
+  }
 
-  remoteConnection.ondatachannel = (event) => {
-    const receiveChannel = event.channel;
-    receiveChannel.onmessage = (e) => {
-      const msg = document.createElement('div');
-      msg.textContent = "الطرف الآخر: " + e.data;
-      document.getElementById('messages').appendChild(msg);
+  currentContact = name;
+  document.getElementById("chatWith").textContent = "الدردشة مع: " + name;
+  document.getElementById("messages").innerHTML = "";
+
+  const contact = contacts[name];
+  const offerDesc = new RTCSessionDescription(JSON.parse(contact.offer));
+  currentConnection = new RTCPeerConnection();
+
+  currentConnection.ondatachannel = (event) => {
+    currentChannel = event.channel;
+    currentChannel.onmessage = (e) => {
+      addMessage("الطرف الآخر", e.data);
+      contact.messages.push({ from: "other", text: e.data });
+      localStorage.setItem("contacts", JSON.stringify(contacts));
     };
-    dataChannel = receiveChannel;
   };
 
-  const desc = new RTCSessionDescription(JSON.parse(offerText));
-  await remoteConnection.setRemoteDescription(desc);
+  await currentConnection.setRemoteDescription(offerDesc);
+  const answer = await currentConnection.createAnswer();
+  await currentConnection.setLocalDescription(answer);
 
-  const answer = await remoteConnection.createAnswer();
-  await remoteConnection.setLocalDescription(answer);
-
-  remoteConnection.onicecandidate = (event) => {
+  currentConnection.onicecandidate = (event) => {
     if (event.candidate === null) {
-      document.getElementById("offer").value = JSON.stringify(remoteConnection.localDescription);
+      alert("تم الاتصال مع " + name + " ✅");
     }
   };
+
+  // استرجاع المحادثة
+  if (contact.messages) {
+    contact.messages.forEach(msg => {
+      addMessage(msg.from === "me" ? "أنت" : "الطرف الآخر", msg.text);
+    });
+  }
 }
 
-function receiveManualOffer() {
-  const offerText = document.getElementById("answer").value;
-  receiveOffer(offerText);
-}
-
+// إرسال رسالة
 function sendMessage() {
   const input = document.getElementById("messageInput");
-  const message = input.value;
-  if (message && dataChannel && dataChannel.readyState === "open") {
-    dataChannel.send(message);
-    const msg = document.createElement('div');
-    msg.textContent = "أنت: " + message;
-    document.getElementById('messages').appendChild(msg);
-    input.value = "";
+  const msg = input.value.trim();
+  if (!msg || !currentChannel || currentChannel.readyState !== "open") return;
+
+  currentChannel.send(msg);
+  addMessage("أنت", msg);
+  contacts[currentContact].messages.push({ from: "me", text: msg });
+  localStorage.setItem("contacts", JSON.stringify(contacts));
+  input.value = "";
+}
+
+// عرض الرسالة على الشاشة
+function addMessage(sender, text) {
+  const msg = document.createElement("div");
+  msg.textContent = `${sender}: ${text}`;
+  document.getElementById("messages").appendChild(msg);
+}
+
+let localConnectionForOffer;
+
+async function createOffer() {
+  localConnectionForOffer = new RTCPeerConnection();
+  const dataChannel = localConnectionForOffer.createDataChannel("chat");
+
+  const offer = await localConnectionForOffer.createOffer();
+  await localConnectionForOffer.setLocalDescription(offer);
+
+  localConnectionForOffer.onicecandidate = (event) => {
+    if (!event.candidate) {
+      document.getElementById("generatedOffer").value = JSON.stringify(localConnectionForOffer.localDescription);
+    }
+  };
+}
+
+let connection;
+let dataChannel;
+
+async function createOffer() {
+  connection = new RTCPeerConnection();
+  dataChannel = connection.createDataChannel("chat");
+
+  dataChannel.onopen = () => console.log("Channel Opened");
+  dataChannel.onmessage = (e) => {
+    console.log("Received:", e.data);
+  };
+
+  connection.onicecandidate = (event) => {
+    if (!event.candidate) {
+      document.getElementById("generatedOffer").value = JSON.stringify(connection.localDescription);
+    }
+  };
+
+  const offer = await connection.createOffer();
+  await connection.setLocalDescription(offer);
+}
+
+function copyGeneratedOffer() {
+  const offer = document.getElementById("generatedOffer").value;
+  if (offer) {
+    navigator.clipboard.writeText(offer).then(() => {
+      alert("تم نسخ الـ Offer");
+    });
   }
 }
