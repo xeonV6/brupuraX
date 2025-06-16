@@ -2,27 +2,39 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>شات مباشر بين جهازين - WebRTC</title>
+  <title>wasabi</title>
   <link rel="stylesheet" href="ura2.css">
 </head>
 <body>
 
-<h2>شات مباشر بين جهازين (WebRTC)</h2>
+  <div class="container">
+    <!-- القائمة اليمنى -->
+    <div class="sidebar">
+      <h3>الأصدقاء</h3>
+      <ul id="contactList"></ul>
+      <div class="add-contact">
+        <input type="text" id="contactName" placeholder="اسم الصديق">
+        <textarea id="contactOffer" placeholder="الصق offer هنا (مرة واحدة فقط)"></textarea>
+        <button onclick="addContact()">أضف الصديق</button>
+      </div>
+      <div class="create-offer" style="margin-top: 20px;">
+        <h3>إنشاء Offer</h3>
+        <button onclick="createOffer()">إنشاء Offer</button>
+        <textarea id="generatedOffer" readonly></textarea>
+        <button onclick="copyGeneratedOffer()">نسخ Offer</button>
+      </div>
 
-<div>
-  <button onclick="createConnection()">ابدأ الاتصال</button>
-  <textarea id="offer" placeholder="انسخ هذا الكود وارسله للطرف الآخر"></textarea>
-  <textarea id="answer" placeholder="ضع هنا الكود من الطرف الآخر"></textarea>
-  <button onclick="setAnswer()">ربط الاتصال</button>
-  <button onclick="receiveManualOffer()">استقبال العرض</button>
-</div>
+    </div>
 
-<div>
-  <div id="messages"></div>
-  <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter') sendMessage()">
-  <button onclick="sendMessage()">إرسال</button>
-</div>
+    <!-- منطقة الدردشة -->
+    <div class="chat">
+      <h3 id="chatWith">اختر صديقًا</h3>
+      <div id="messages" class="messages"></div>
+      <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter') sendMessage()">
+      <button onclick="sendMessage()">إرسال</button>
+    </div>
+  </div>
 
-<script src="ura3.js"></script>
+  <script src="ura3.js"></script>
 </body>
 </html>
