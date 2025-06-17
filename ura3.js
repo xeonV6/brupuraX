@@ -48,7 +48,6 @@ async function connectTo(name) {
 
   const contact = contacts[name];
   const offerDesc = new RTCSessionDescription(JSON.parse(contact.offer));
-
   currentConnection = new RTCPeerConnection({
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
   });
@@ -60,6 +59,7 @@ async function connectTo(name) {
       contact.messages.push({ from: "other", text: e.data });
       localStorage.setItem("contacts", JSON.stringify(contacts));
     };
+    currentChannel.onopen = () => console.log("قناة البيانات مفتوحة");
   };
 
   await currentConnection.setRemoteDescription(offerDesc);
@@ -67,9 +67,14 @@ async function connectTo(name) {
   await currentConnection.setLocalDescription(answer);
 
   currentConnection.onicecandidate = (event) => {
+    console.log("onicecandidate:", event.candidate);
     if (event.candidate === null) {
       alert("تم الاتصال مع " + name + " ✅");
     }
+  };
+
+  currentConnection.onconnectionstatechange = () => {
+    console.log("حالة الاتصال:", currentConnection.connectionState);
   };
 
   // استرجاع المحادثة
@@ -108,20 +113,32 @@ async function createOffer() {
   offerConnection = new RTCPeerConnection({
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
   });
+
   offerChannel = offerConnection.createDataChannel("chat");
 
   offerChannel.onopen = () => console.log("تم فتح القناة");
   offerChannel.onmessage = (e) => console.log("استلمت:", e.data);
 
   offerConnection.onicecandidate = (event) => {
+    console.log("onicecandidate fired:", event.candidate);
     if (event.candidate === null) {
-      document.getElementById("generatedOffer").value = JSON.stringify(offerConnection.localDescription);
+      console.log("تم الانتهاء من جمع ICE candidates");
+      setTimeout(() => {
+        document.getElementById("generatedOffer").value = JSON.stringify(offerConnection.localDescription);
+        console.log("تم تعيين العرض في textarea");
+      }, 500);
     }
+  };
+
+  offerConnection.onconnectionstatechange = () => {
+    console.log("حالة الاتصال:", offerConnection.connectionState);
   };
 
   try {
     const offer = await offerConnection.createOffer();
+    console.log("تم إنشاء العرض:", offer);
     await offerConnection.setLocalDescription(offer);
+    console.log("تم تعيين العرض المحلي");
   } catch (error) {
     alert("حدث خطأ أثناء إنشاء الـ Offer: " + error);
   }
