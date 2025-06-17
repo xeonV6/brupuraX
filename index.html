@@ -1,44 +1,63 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>wasabi</title>
-  <link rel="stylesheet" href="ura2.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <div class="sidebar">
+  <div class="layout">
+    <!-- الشريط الجانبي -->
+    <aside class="sidebar">
       <h3>الأصدقاء</h3>
       <ul id="contactList"></ul>
+
       <div class="add-contact">
-        <input type="text" id="contactName" placeholder="اسم الصديق" />
+        <input type="text" id="contactName" placeholder="اسم الصديق">
         <textarea id="contactSignal" placeholder="الصق هنا العرض أو الرد"></textarea>
         <button onclick="addContact()">ربط</button>
       </div>
 
       <div class="create-offer">
-        <h3>إنشاء اتصال</h3>
+        <h3>الاتصال</h3>
         <button onclick="createOffer()">إنشاء Offer</button>
-        <textarea id="generatedOffer" readonly></textarea>
-        <button onclick="copyGeneratedOffer()">نسخ</button>
+        <button onclick="startCall()">📞 مكالمة صوتية</button>
+        <div class="signal-box" id="signalBox"></div>
+        <button onclick="copySignal()">📋 نسخ</button>
+        <button onclick="pasteSignal()">📥 لصق</button>
       </div>
 
-      <textarea id="contactOffer" placeholder="الصق offer هنا (مرة واحدة فقط)"></textarea>
-      <button onclick="addContact()">أضف الصديق</button>
-      <button onclick="copyAnswerFromOffer()">نسخ Answer</button>
-
+      <button onclick="showInstructions()" class="instruction-btn">📘 خطوات الاتصال</button>
       <div class="version">beta 0.0.1</div>
-    </div>
+    </aside>
 
-    <div class="chat">
+    <!-- المحادثة -->
+    <main class="chat">
       <h3 id="chatWith">اختر صديقًا</h3>
       <div id="messages" class="messages"></div>
-      <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter') sendMessage()" />
-      <input type="file" id="imageInput" accept="image/*" />
-      <button onclick="sendMessage()">إرسال</button>
+      <div class="msg-controls">
+        <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()">إرسال</button>
+        <button onclick="deleteMessages()" class="delete-msg">🗑️</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- نافذة التعليمات -->
+  <div id="instructions" class="modal hidden">
+    <div class="modal-content">
+      <h3>خطوات الاتصال</h3>
+      <ol>
+        <li>قم بإنشاء Offer وانسخه.</li>
+        <li>ارسل الـ Offer للطرف الآخر.</li>
+        <li>الطرف الآخر يلصق الـ Offer ويقوم بربط.</li>
+        <li>ينسخ الطرف الآخر الـ Answer ويرسله لك.</li>
+        <li>تلصق أنت الـ Answer وتربط.</li>
+      </ol>
+      <button onclick="hideInstructions()">إغلاق</button>
     </div>
   </div>
 
-  <script src="ura3.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
