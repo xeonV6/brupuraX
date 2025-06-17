@@ -1,6 +1,7 @@
-let peerConnection = null;
-let dataChannel = null;
+let currentConnection = null;
+let currentChannel = null;
 let currentContact = null;
+
 let contacts = JSON.parse(localStorage.getItem("contacts")) || {};
 updateContactList();
 
@@ -9,10 +10,13 @@ function addContact() {
   const offer = document.getElementById("contactOffer").value.trim();
   if (!name || !offer) return alert("يرجى إدخال الاسم والعرض.");
 
-  contacts[name] = { offer: offer, messages: [] };
+  contacts[name] = {
+    offer: offer,
+    messages: []
+  };
+
   localStorage.setItem("contacts", JSON.stringify(contacts));
   updateContactList();
-
   document.getElementById("contactName").value = "";
   document.getElementById("contactOffer").value = "";
 }
@@ -28,34 +32,11 @@ function updateContactList() {
   }
 }
 
-async function createOffer() {
-  peerConnection = new RTCPeerConnection();
-  dataChannel = peerConnection.createDataChannel("chat");
-
-  dataChannel.onopen = () => console.log("القناة مفتوحة");
-  dataChannel.onmessage = (e) => {
-    console.log("رسالة مستلمة:", e.data);
-  };
-
-  peerConnection.onicecandidate = (event) => {
-    if (!event.candidate) {
-      document.getElementById("generatedOffer").value = JSON.stringify(peerConnection.localDescription);
-    }
-  };
-
-  try {
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-  } catch (err) {
-    alert("خطأ في إنشاء الـ Offer: " + err.message);
-  }
-}
-
 async function connectTo(name) {
-  if (peerConnection) {
-    peerConnection.close();
-    peerConnection = null;
-    dataChannel = null;
+  if (currentConnection) {
+    currentConnection.close();
+    currentConnection = null;
+    currentChannel = null;
   }
 
   currentContact = name;
@@ -63,75 +44,97 @@ async function connectTo(name) {
   document.getElementById("messages").innerHTML = "";
 
   const contact = contacts[name];
-  if (!contact || !contact.offer) {
-    alert("لا يوجد عرض (Offer) لهذا الصديق.");
-    return;
-  }
+  const offerDesc = new RTCSessionDescription(JSON.parse(contact.offer));
+  currentConnection = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
 
-  try {
-    peerConnection = new RTCPeerConnection();
-
-    peerConnection.ondatachannel = (event) => {
-      dataChannel = event.channel;
-      dataChannel.onmessage = (e) => {
-        addMessage("الطرف الآخر", e.data);
-        contact.messages.push({ from: "other", text: e.data });
-        localStorage.setItem("contacts", JSON.stringify(contacts));
-      };
+  currentConnection.ondatachannel = (event) => {
+    currentChannel = event.channel;
+    currentChannel.onmessage = (e) => {
+      addMessage("الطرف الآخر", e.data);
+      contact.messages.push({ from: "other", text: e.data });
+      localStorage.setItem("contacts", JSON.stringify(contacts));
     };
+    currentChannel.onopen = () => console.log("قناة البيانات مفتوحة");
+  };
 
-    const offerDesc = new RTCSessionDescription(JSON.parse(contact.offer));
-    await peerConnection.setRemoteDescription(offerDesc);
+  await currentConnection.setRemoteDescription(offerDesc);
+  const answer = await currentConnection.createAnswer();
+  await currentConnection.setLocalDescription(answer);
 
-    const answer = await peerConnection.createAnswer();
-    await peerConnection.setLocalDescription(answer);
-
-    peerConnection.onicecandidate = (event) => {
-      if (!event.candidate) {
-        alert("تم الاتصال مع " + name + " ✅");
-      }
-    };
-
-    // استرجاع المحادثة السابقة
-    if (contact.messages) {
-      contact.messages.forEach(msg => {
-        addMessage(msg.from === "me" ? "أنت" : "الطرف الآخر", msg.text);
-      });
+  currentConnection.onicecandidate = (event) => {
+    if (event.candidate === null) {
+      alert("تم الاتصال مع " + name + " ✅");
     }
-  } catch (err) {
-    alert("خطأ في الاتصال: " + err.message);
+  };
+
+  currentConnection.onconnectionstatechange = () => {
+    console.log("حالة الاتصال:", currentConnection.connectionState);
+  };
+
+  if (contact.messages) {
+    contact.messages.forEach((msg) => {
+      addMessage(msg.from === "me" ? "أنت" : "الطرف الآخر", msg.text);
+    });
   }
 }
 
 function sendMessage() {
   const input = document.getElementById("messageInput");
   const msg = input.value.trim();
-  if (!msg || !dataChannel || dataChannel.readyState !== "open") return;
+  if (!msg || !currentChannel || currentChannel.readyState !== "open") return;
 
-  dataChannel.send(msg);
+  currentChannel.send(msg);
   addMessage("أنت", msg);
-
-  if (currentContact) {
-    contacts[currentContact].messages.push({ from: "me", text: msg });
-    localStorage.setItem("contacts", JSON.stringify(contacts));
-  }
+  contacts[currentContact].messages.push({ from: "me", text: msg });
+  localStorage.setItem("contacts", JSON.stringify(contacts));
   input.value = "";
 }
 
 function addMessage(sender, text) {
-  const messagesDiv = document.getElementById("messages");
-  const msgDiv = document.createElement("div");
-  msgDiv.textContent = `${sender}: ${text}`;
-  messagesDiv.appendChild(msgDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  const msg = document.createElement("div");
+  msg.textContent = `${sender}: ${text}`;
+  document.getElementById("messages").appendChild(msg);
+}
+
+let offerConnection = null;
+let offerChannel = null;
+
+async function createOffer() {
+  if (offerConnection) {
+    offerConnection.close();
+    offerConnection = null;
+    offerChannel = null;
+  }
+
+  offerConnection = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+
+  offerChannel = offerConnection.createDataChannel("chat");
+
+  offerChannel.onopen = () => console.log("تم فتح القناة");
+  offerChannel.onmessage = (e) => console.log("استلمت:", e.data);
+
+  offerConnection.onicecandidate = (event) => {
+    if (event.candidate === null) {
+      setTimeout(() => {
+        document.getElementById("generatedOffer").value = JSON.stringify(offerConnection.localDescription);
+        console.log("تم تعيين العرض في textarea");
+      }, 200); // تقليل الوقت قليلاً لتحسين التوافق على الجوال
+    }
+  };
+
+  try {
+    const offer = await offerConnection.createOffer();
+    await offerConnection.setLocalDescription(offer);
+  } catch (error) {
+    alert("حدث خطأ أثناء إنشاء الـ Offer: " + error);
+  }
 }
 
 function copyGeneratedOffer() {
   const offer = document.getElementById("generatedOffer").value;
-  if (!offer) return alert("لا يوجد Offer لنسخه.");
-  navigator.clipboard.writeText(offer).then(() => {
-    alert("تم نسخ الـ Offer ✅");
-  }).catch(() => {
-    alert("فشل نسخ الـ Offer.");
-  });
+  if (offer) {
+    navigator.clipboard.writeText(offer).then(() => {
+      alert("تم نسخ الـ Offer ✅");
+    });
+  }
 }
