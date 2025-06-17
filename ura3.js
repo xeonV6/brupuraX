@@ -39,7 +39,7 @@ function updateContactList() {
 
     const delBtn = document.createElement("button");
     delBtn.className = "delete-btn";
-    delBtn.textContent = "حذف";
+    delBtn.textContent = "🗑️";
     delBtn.onclick = (e) => {
       e.stopPropagation();
       delete contacts[name];
@@ -82,6 +82,14 @@ function addMessage(sender, text) {
   document.getElementById("messages").appendChild(div);
 }
 
+function deleteMessages() {
+  if (currentContact) {
+    contacts[currentContact].messages = [];
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+    document.getElementById("messages").innerHTML = "";
+  }
+}
+
 async function createOffer() {
   const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
   const dc = pc.createDataChannel("chat");
@@ -89,13 +97,13 @@ async function createOffer() {
   dc.onopen = () => console.log("Channel Opened");
   dc.onmessage = (e) => {
     addMessage("الطرف الآخر", e.data);
-    contacts[currentContact].messages.push({ from: "other", text: e.data });
+    contacts[currentContact]?.messages.push({ from: "other", text: e.data });
     localStorage.setItem("contacts", JSON.stringify(contacts));
   };
 
   pc.onicecandidate = (e) => {
     if (!e.candidate) {
-      document.getElementById("generatedOffer").value = JSON.stringify(pc.localDescription);
+      document.getElementById("signalBox").textContent = JSON.stringify(pc.localDescription);
     }
   };
 
@@ -128,7 +136,7 @@ async function startAnswer(offer, name) {
   updateContactList();
 
   setTimeout(() => {
-    document.getElementById("generatedOffer").value = JSON.stringify(pc.localDescription);
+    document.getElementById("signalBox").textContent = JSON.stringify(pc.localDescription);
     alert("تم إنشاء Answer، انسخه وأرسله للطرف الآخر.");
   }, 500);
 }
@@ -143,43 +151,48 @@ async function finishConnection(answer, name) {
   alert("تم إكمال الاتصال!");
 }
 
-function copyGeneratedOffer() {
-  const offer = document.getElementById("generatedOffer").value;
-  if (offer) {
-    navigator.clipboard.writeText(offer).then(() => {
-      alert("تم النسخ ✅");
-    });
+// نسخ الإشارة
+function copySignal() {
+  const signal = document.getElementById("signalBox").textContent;
+  if (signal) {
+    navigator.clipboard.writeText(signal).then(() => alert("تم النسخ ✅"));
   }
 }
 
-// إضافة هذه الدالة لنسخ الـ Answer مباشرة عند لصق الـ Offer والضغط على الزر
-async function copyAnswerFromOffer() {
-  const offerText = document.getElementById("contactOffer").value.trim();
-  if (!offerText) {
-    alert("الرجاء لصق الـ Offer أولاً.");
-    return;
-  }
+// لصق الإشارة
+function pasteSignal() {
+  navigator.clipboard.readText().then(text => {
+    document.getElementById("contactSignal").value = text;
+  });
+}
+
+// إظهار التعليمات
+function showInstructions() {
+  document.getElementById("instructions").classList.remove("hidden");
+}
+
+function hideInstructions() {
+  document.getElementById("instructions").classList.add("hidden");
+}
+
+// مكالمة صوتية
+async function startCall() {
+  const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
 
   try {
-    const offerDesc = new RTCSessionDescription(JSON.parse(offerText));
-    const tempConnection = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-    });
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
 
-    await tempConnection.setRemoteDescription(offerDesc);
-    const answer = await tempConnection.createAnswer();
-    await tempConnection.setLocalDescription(answer);
+    pc.onicecandidate = (e) => {
+      if (!e.candidate) {
+        document.getElementById("signalBox").textContent = JSON.stringify(pc.localDescription);
+      }
+    };
 
-    // انتظر بعض الوقت لجمع ICE candidates (اختياري)
-    await new Promise(res => setTimeout(res, 1000));
-
-    const finalAnswer = JSON.stringify(tempConnection.localDescription);
-
-    await navigator.clipboard.writeText(finalAnswer);
-    alert("تم نسخ الـ Answer بنجاح ✅");
-
-    tempConnection.close();
-  } catch (error) {
-    alert("حدث خطأ أثناء إنشاء الـ Answer: " + error.message);
+    currentConnection = pc;
+  } catch (err) {
+    alert("تعذر بدء المكالمة الصوتية: " + err.message);
   }
 }
