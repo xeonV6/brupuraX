@@ -1,53 +1,35 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>wasabi</title>
-  <link rel="stylesheet" href="ura2.css" />
+  <link rel="stylesheet" href="ura2.css">
 </head>
 <body>
-
   <div class="container">
-    <!-- القائمة اليمنى -->
     <div class="sidebar">
       <h3>الأصدقاء</h3>
       <ul id="contactList"></ul>
       <div class="add-contact">
-        <input type="text" id="contactName" placeholder="اسم الصديق" />
-        <textarea id="contactOffer" placeholder="الصق offer هنا (مرة واحدة فقط)"></textarea>
-        <button onclick="addContact()">أضف الصديق</button>
+        <input type="text" id="contactName" placeholder="اسم الصديق">
+        <textarea id="contactSignal" placeholder="الصق هنا العرض أو الرد"></textarea>
+        <button onclick="addContact()">ربط</button>
       </div>
-
-      <div class="create-offer" style="margin-top: 20px;">
-        <h3>إنشاء Offer</h3>
+      <div class="create-offer">
+        <h3>إنشاء اتصال</h3>
         <button onclick="createOffer()">إنشاء Offer</button>
         <textarea id="generatedOffer" readonly></textarea>
-        <button onclick="copyGeneratedOffer()">نسخ Offer</button>
+        <button onclick="copyGeneratedOffer()">نسخ</button>
       </div>
-
-      <div class="create-answer" style="margin-top: 20px;">
-        <h3>إدخال Answer</h3>
-        <textarea id="answerInput" placeholder="الصق هنا الـ Answer من الطرف الآخر"></textarea>
-        <button onclick="setAnswer()">تطبيق Answer</button>
-      </div>
+      <div class="version">beta 0.0.1</div>
     </div>
 
-    <!-- منطقة الدردشة -->
     <div class="chat">
       <h3 id="chatWith">اختر صديقًا</h3>
       <div id="messages" class="messages"></div>
-      <input
-        type="text"
-        id="messageInput"
-        placeholder="اكتب رسالة..."
-        onkeydown="if(event.key==='Enter') sendMessage()"
-      />
+      <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter') sendMessage()">
       <button onclick="sendMessage()">إرسال</button>
     </div>
-  </div>
-
-  <div id="version" style="position: fixed; bottom: 5px; right: 5px; font-size: 12px; color: #666;">
-    beta 0.0.1
   </div>
 
   <script src="ura3.js"></script>
