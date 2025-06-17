@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>wasabi</title>
-  <link rel="stylesheet" href="ura2.css">
+  <link rel="stylesheet" href="ura2.css" />
 </head>
 <body>
 
@@ -13,7 +13,7 @@
       <h3>الأصدقاء</h3>
       <ul id="contactList"></ul>
       <div class="add-contact">
-        <input type="text" id="contactName" placeholder="اسم الصديق">
+        <input type="text" id="contactName" placeholder="اسم الصديق" />
         <textarea id="contactOffer" placeholder="الصق offer هنا (مرة واحدة فقط)"></textarea>
         <button onclick="addContact()">أضف الصديق</button>
       </div>
@@ -23,17 +23,23 @@
         <textarea id="generatedOffer" readonly></textarea>
         <button onclick="copyGeneratedOffer()">نسخ Offer</button>
       </div>
-
     </div>
 
     <!-- منطقة الدردشة -->
     <div class="chat">
       <h3 id="chatWith">اختر صديقًا</h3>
       <div id="messages" class="messages"></div>
-      <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter') sendMessage()">
+      <input
+        type="text"
+        id="messageInput"
+        placeholder="اكتب رسالة..."
+        onkeydown="if(event.key==='Enter') sendMessage()"
+      />
       <button onclick="sendMessage()">إرسال</button>
     </div>
   </div>
+
+  <div id="versionBadge">beta 0.0.1</div>
 
   <script src="ura3.js"></script>
 </body>
