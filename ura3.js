@@ -48,7 +48,10 @@ async function connectTo(name) {
 
   const contact = contacts[name];
   const offerDesc = new RTCSessionDescription(JSON.parse(contact.offer));
-  currentConnection = new RTCPeerConnection();
+
+  currentConnection = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+  });
 
   currentConnection.ondatachannel = (event) => {
     currentChannel = event.channel;
@@ -102,22 +105,26 @@ let offerConnection;
 let offerChannel;
 
 async function createOffer() {
-  offerConnection = new RTCPeerConnection();
+  offerConnection = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+  });
   offerChannel = offerConnection.createDataChannel("chat");
 
   offerChannel.onopen = () => console.log("تم فتح القناة");
-  offerChannel.onmessage = (e) => {
-    console.log("استلمت:", e.data);
-  };
+  offerChannel.onmessage = (e) => console.log("استلمت:", e.data);
 
   offerConnection.onicecandidate = (event) => {
-    if (!event.candidate) {
+    if (event.candidate === null) {
       document.getElementById("generatedOffer").value = JSON.stringify(offerConnection.localDescription);
     }
   };
 
-  const offer = await offerConnection.createOffer();
-  await offerConnection.setLocalDescription(offer);
+  try {
+    const offer = await offerConnection.createOffer();
+    await offerConnection.setLocalDescription(offer);
+  } catch (error) {
+    alert("حدث خطأ أثناء إنشاء الـ Offer: " + error);
+  }
 }
 
 // نسخ الـ Offer
