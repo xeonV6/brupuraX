@@ -97,49 +97,35 @@ function addMessage(sender, text) {
   document.getElementById("messages").appendChild(msg);
 }
 
-let localConnectionForOffer;
+// إنشاء Offer
+let offerConnection;
+let offerChannel;
 
 async function createOffer() {
-  localConnectionForOffer = new RTCPeerConnection();
-  const dataChannel = localConnectionForOffer.createDataChannel("chat");
+  offerConnection = new RTCPeerConnection();
+  offerChannel = offerConnection.createDataChannel("chat");
 
-  const offer = await localConnectionForOffer.createOffer();
-  await localConnectionForOffer.setLocalDescription(offer);
-
-  localConnectionForOffer.onicecandidate = (event) => {
-    if (!event.candidate) {
-      document.getElementById("generatedOffer").value = JSON.stringify(localConnectionForOffer.localDescription);
-    }
-  };
-}
-
-let connection;
-let dataChannel;
-
-async function createOffer() {
-  connection = new RTCPeerConnection();
-  dataChannel = connection.createDataChannel("chat");
-
-  dataChannel.onopen = () => console.log("Channel Opened");
-  dataChannel.onmessage = (e) => {
-    console.log("Received:", e.data);
+  offerChannel.onopen = () => console.log("تم فتح القناة");
+  offerChannel.onmessage = (e) => {
+    console.log("استلمت:", e.data);
   };
 
-  connection.onicecandidate = (event) => {
+  offerConnection.onicecandidate = (event) => {
     if (!event.candidate) {
-      document.getElementById("generatedOffer").value = JSON.stringify(connection.localDescription);
+      document.getElementById("generatedOffer").value = JSON.stringify(offerConnection.localDescription);
     }
   };
 
-  const offer = await connection.createOffer();
-  await connection.setLocalDescription(offer);
+  const offer = await offerConnection.createOffer();
+  await offerConnection.setLocalDescription(offer);
 }
 
+// نسخ الـ Offer
 function copyGeneratedOffer() {
   const offer = document.getElementById("generatedOffer").value;
   if (offer) {
     navigator.clipboard.writeText(offer).then(() => {
-      alert("تم نسخ الـ Offer");
+      alert("تم نسخ الـ Offer ✅");
     });
   }
 }
