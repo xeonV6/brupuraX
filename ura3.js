@@ -3,7 +3,24 @@ let currentConnection = null;
 let currentChannel = null;
 let currentContact = null;
 
+restoreConnections();
+
 updateContactList();
+
+function restoreConnections() {
+  // نحاول نعيد فتح الاتصال مع كل جهة محفوظة
+  Object.keys(contacts).forEach(name => {
+    // لو عندنا offer محفوظ نقدر نحاول نبدأ جواب answer تلقائي
+    if (contacts[name].offer) {
+      try {
+        const offer = JSON.parse(contacts[name].offer);
+        startAnswer(offer, name);
+      } catch {
+        // لو في خطأ ما نعمل شيء
+      }
+    }
+  });
+}
 
 function addContact() {
   const name = document.getElementById("contactName").value.trim();
@@ -34,7 +51,10 @@ function updateContactList() {
 
   Object.keys(contacts).forEach(name => {
     const li = document.createElement("li");
-    li.textContent = name;
+
+    // إضافة علامة خضراء اذا الشخص "أونلاين" - بناء على حالة الاتصال
+    const isOnline = contacts[name].connected ? "🟢 " : "🔴 ";
+    li.textContent = isOnline + name;
     li.onclick = () => openChat(name);
 
     const delBtn = document.createElement("button");
@@ -94,7 +114,23 @@ async function createOffer() {
   const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
   const dc = pc.createDataChannel("chat");
 
-  dc.onopen = () => console.log("Channel Opened");
+  dc.onopen = () => {
+    console.log("Channel Opened");
+    if (currentContact) {
+      contacts[currentContact].connected = true;
+      localStorage.setItem("contacts", JSON.stringify(contacts));
+      updateContactList();
+    }
+  };
+
+  dc.onclose = () => {
+    if (currentContact) {
+      contacts[currentContact].connected = false;
+      localStorage.setItem("contacts", JSON.stringify(contacts));
+      updateContactList();
+    }
+  };
+
   dc.onmessage = (e) => {
     addMessage("الطرف الآخر", e.data);
     contacts[currentContact]?.messages.push({ from: "other", text: e.data });
@@ -112,6 +148,14 @@ async function createOffer() {
 
   currentConnection = pc;
   currentChannel = dc;
+
+  if (currentContact) {
+    contacts[currentContact] = contacts[currentContact] || { messages: [] };
+    contacts[currentContact].offer = JSON.stringify(offer);
+    contacts[currentContact].connected = false;
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+    updateContactList();
+  }
 }
 
 async function startAnswer(offer, name) {
@@ -119,6 +163,19 @@ async function startAnswer(offer, name) {
 
   pc.ondatachannel = (e) => {
     currentChannel = e.channel;
+
+    currentChannel.onopen = () => {
+      contacts[name].connected = true;
+      localStorage.setItem("contacts", JSON.stringify(contacts));
+      updateContactList();
+    };
+
+    currentChannel.onclose = () => {
+      contacts[name].connected = false;
+      localStorage.setItem("contacts", JSON.stringify(contacts));
+      updateContactList();
+    };
+
     currentChannel.onmessage = (e) => {
       addMessage("الطرف الآخر", e.data);
       contacts[name].messages.push({ from: "other", text: e.data });
@@ -131,7 +188,9 @@ async function startAnswer(offer, name) {
   await pc.setLocalDescription(answer);
 
   currentConnection = pc;
-  contacts[name] = { offer: JSON.stringify(offer), messages: [] };
+  contacts[name] = contacts[name] || { messages: [] };
+  contacts[name].offer = JSON.stringify(offer);
+  contacts[name].connected = false;
   localStorage.setItem("contacts", JSON.stringify(contacts));
   updateContactList();
 
