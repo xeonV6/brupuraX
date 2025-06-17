@@ -164,3 +164,37 @@ body {
 .delete-btn:hover {
   background-color: #c0392b;
 }
+
+/* نفس المحتوى السابق مع إضافة: */
+
+#contactList li {
+  position: relative;
+  padding: 10px 40px 10px 10px; /* مسافة للزر */
+  background-color: #eee;
+  margin-bottom: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+#contactList li:hover {
+  background-color: #ddd;
+}
+
+/* زر الحذف */
+.delete-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
