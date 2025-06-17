@@ -151,3 +151,35 @@ function copyGeneratedOffer() {
     });
   }
 }
+
+// إضافة هذه الدالة لنسخ الـ Answer مباشرة عند لصق الـ Offer والضغط على الزر
+async function copyAnswerFromOffer() {
+  const offerText = document.getElementById("contactOffer").value.trim();
+  if (!offerText) {
+    alert("الرجاء لصق الـ Offer أولاً.");
+    return;
+  }
+
+  try {
+    const offerDesc = new RTCSessionDescription(JSON.parse(offerText));
+    const tempConnection = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    });
+
+    await tempConnection.setRemoteDescription(offerDesc);
+    const answer = await tempConnection.createAnswer();
+    await tempConnection.setLocalDescription(answer);
+
+    // انتظر بعض الوقت لجمع ICE candidates (اختياري)
+    await new Promise(res => setTimeout(res, 1000));
+
+    const finalAnswer = JSON.stringify(tempConnection.localDescription);
+
+    await navigator.clipboard.writeText(finalAnswer);
+    alert("تم نسخ الـ Answer بنجاح ✅");
+
+    tempConnection.close();
+  } catch (error) {
+    alert("حدث خطأ أثناء إنشاء الـ Answer: " + error.message);
+  }
+}
