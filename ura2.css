@@ -1,20 +1,22 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
   margin: 0;
   padding: 0;
+  background-color: #f2f2f2;
   direction: rtl;
 }
 
-.container {
+.layout {
   display: flex;
   height: 100vh;
+  overflow: hidden;
 }
 
+/* الشريط الجانبي */
 .sidebar {
   width: 25%;
-  background-color: #ffffff;
-  border-left: 1px solid #ddd;
+  background: #ffffff;
+  border-left: 1px solid #ccc;
   padding: 20px;
   box-sizing: border-box;
   overflow-y: auto;
@@ -27,63 +29,83 @@ body {
 #contactList {
   list-style: none;
   padding: 0;
-  margin-bottom: 20px;
+  margin: 0 0 15px 0;
 }
 
 #contactList li {
-  padding: 10px;
   background-color: #eee;
-  margin-bottom: 5px;
-  cursor: pointer;
-  border-radius: 5px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border-radius: 4px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
 }
 
 #contactList li:hover {
   background-color: #ddd;
 }
 
-#contactList .delete-btn {
-  background: red;
-  color: white;
+.delete-btn {
   border: none;
-  padding: 3px 7px;
-  border-radius: 3px;
+  background: none;
+  font-size: 16px;
   cursor: pointer;
+  color: #c00;
 }
 
-.add-contact input,
-.add-contact textarea {
+.add-contact textarea,
+.add-contact input {
   width: 100%;
-  padding: 8px;
   margin-bottom: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  padding: 8px;
   box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: none;
 }
 
-.add-contact button {
+.add-contact button,
+.create-offer button,
+.instruction-btn {
   width: 100%;
+  margin-bottom: 8px;
   padding: 10px;
-  background-color: #4CAF50;
-  color: white;
   border: none;
-  border-radius: 5px;
+  background-color: #0078d4;
+  color: white;
+  border-radius: 4px;
   cursor: pointer;
 }
 
-.add-contact button:hover {
-  background-color: #45a049;
+.add-contact button:hover,
+.create-offer button:hover,
+.instruction-btn:hover {
+  background-color: #005fa3;
 }
 
+.signal-box {
+  width: 100%;
+  height: 120px;
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+  padding: 8px;
+  box-sizing: border-box;
+  overflow: auto;
+  font-family: monospace;
+  border-radius: 4px;
+  resize: none;
+}
+
+/* واجهة المحادثة */
 .chat {
   width: 75%;
-  padding: 20px;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .chat h3 {
@@ -92,7 +114,7 @@ body {
 
 .messages {
   flex: 1;
-  background-color: white;
+  background: white;
   border: 1px solid #ccc;
   padding: 10px;
   overflow-y: auto;
@@ -100,50 +122,73 @@ body {
   border-radius: 5px;
 }
 
+.msg-controls {
+  display: flex;
+  gap: 10px;
+}
+
 #messageInput {
+  flex: 1;
   padding: 10px;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-  border-radius: 5px;
+  border-radius: 4px;
   border: 1px solid #ccc;
 }
 
 .chat button {
-  padding: 10px;
-  background-color: #2196F3;
-  color: white;
+  padding: 10px 15px;
   border: none;
-  border-radius: 5px;
+  background-color: #0078d4;
+  color: white;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 .chat button:hover {
-  background-color: #0b7dda;
+  background-color: #005fa3;
 }
 
-.create-offer textarea {
-  width: 100%;
-  height: 100px;
-  resize: none;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-  margin-bottom: 5px;
-  font-family: monospace;
-  background-color: #f9f9f9;
+.delete-msg {
+  background-color: #c00;
 }
 
-#generatedOffer {
-  height: 150px;
-  resize: none;
-  overflow: auto;
+.delete-msg:hover {
+  background-color: #900;
+}
+
+/* نافذة التعليمات */
+.modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  width: 300px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.modal-content ol {
+  text-align: right;
+  padding-right: 20px;
 }
 
 .version {
-  margin-top: 30px;
+  margin-top: 20px;
   font-size: 12px;
-  color: #777;
-  text-align: right;
+  color: #999;
+  text-align: center;
 }
