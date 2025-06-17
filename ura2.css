@@ -1,22 +1,20 @@
 body {
   font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
   margin: 0;
   padding: 0;
-  background-color: #f2f2f2;
   direction: rtl;
 }
 
-.layout {
+.container {
   display: flex;
   height: 100vh;
-  overflow: hidden;
 }
 
-/* الشريط الجانبي */
 .sidebar {
   width: 25%;
-  background: #ffffff;
-  border-left: 1px solid #ccc;
+  background-color: #ffffff;
+  border-left: 1px solid #ddd;
   padding: 20px;
   box-sizing: border-box;
   overflow-y: auto;
@@ -29,83 +27,52 @@ body {
 #contactList {
   list-style: none;
   padding: 0;
-  margin: 0 0 15px 0;
+  margin-bottom: 20px;
 }
 
 #contactList li {
+  padding: 10px;
   background-color: #eee;
-  padding: 8px 12px;
-  margin-bottom: 6px;
-  border-radius: 4px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  border-radius: 5px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: pointer;
 }
 
 #contactList li:hover {
   background-color: #ddd;
 }
 
-.delete-btn {
+#contactList .delete-btn {
+  background: transparent;
+  color: red;
   border: none;
-  background: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: #c00;
-}
-
-.add-contact textarea,
-.add-contact input {
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 8px;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  resize: none;
-}
-
-.add-contact button,
-.create-offer button,
-.instruction-btn {
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 10px;
-  border: none;
-  background-color: #0078d4;
-  color: white;
-  border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
 }
 
-.add-contact button:hover,
-.create-offer button:hover,
-.instruction-btn:hover {
-  background-color: #005fa3;
-}
-
-.signal-box {
-  width: 100%;
-  height: 120px;
-  background: #f9f9f9;
-  border: 1px solid #ccc;
-  margin-bottom: 8px;
-  padding: 8px;
-  box-sizing: border-box;
-  overflow: auto;
-  font-family: monospace;
-  border-radius: 4px;
+textarea[readonly] {
   resize: none;
 }
 
-/* واجهة المحادثة */
+.add-contact input,
+.add-contact textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
 .chat {
   width: 75%;
-  display: flex;
-  flex-direction: column;
   padding: 20px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat h3 {
@@ -114,7 +81,7 @@ body {
 
 .messages {
   flex: 1;
-  background: white;
+  background-color: white;
   border: 1px solid #ccc;
   padding: 10px;
   overflow-y: auto;
@@ -122,73 +89,56 @@ body {
   border-radius: 5px;
 }
 
-.msg-controls {
-  display: flex;
-  gap: 10px;
+.messages img {
+  max-width: 200px;
+  margin: 5px 0;
+}
+
+.message {
+  margin: 5px 0;
+  cursor: pointer;
 }
 
 #messageInput {
-  flex: 1;
   padding: 10px;
-  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  border-radius: 5px;
   border: 1px solid #ccc;
 }
 
 .chat button {
-  padding: 10px 15px;
-  border: none;
-  background-color: #0078d4;
+  padding: 10px;
+  background-color: #2196F3;
   color: white;
-  border-radius: 4px;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
 }
 
 .chat button:hover {
-  background-color: #005fa3;
+  background-color: #0b7dda;
 }
 
-.delete-msg {
-  background-color: #c00;
-}
-
-.delete-msg:hover {
-  background-color: #900;
-}
-
-/* نافذة التعليمات */
-.modal {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-.modal.hidden {
-  display: none;
-}
-
-.modal-content {
-  background: white;
-  padding: 20px;
-  width: 300px;
-  border-radius: 6px;
-  text-align: center;
-}
-
-.modal-content ol {
-  text-align: right;
-  padding-right: 20px;
+.create-offer textarea {
+  width: 100%;
+  height: 120px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-family: monospace;
+  background-color: #f9f9f9;
 }
 
 .version {
-  margin-top: 20px;
+  margin-top: 30px;
   font-size: 12px;
-  color: #999;
-  text-align: center;
+  color: #777;
+  text-align: right;
+}
+
+.instructions-toggle button {
+  margin-top: 10px;
+  background-color: #777;
 }
