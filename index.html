@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>wasabi</title>
-  <link rel="stylesheet" href="ura2.css">
+  <link rel="stylesheet" href="ura2.css" />
 </head>
 <body>
   <div class="layout">
@@ -13,7 +13,7 @@
       <ul id="contactList"></ul>
 
       <div class="add-contact">
-        <input type="text" id="contactName" placeholder="اسم الصديق">
+        <input type="text" id="contactName" placeholder="اسم الصديق" />
         <textarea id="contactSignal" placeholder="الصق هنا العرض أو الرد"></textarea>
         <button onclick="addContact()">ربط</button>
       </div>
@@ -36,7 +36,12 @@
       <h3 id="chatWith">اختر صديقًا</h3>
       <div id="messages" class="messages"></div>
       <div class="msg-controls">
-        <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter') sendMessage()">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="اكتب رسالة..."
+          onkeydown="if(event.key==='Enter') sendMessage()"
+        />
         <button onclick="sendMessage()">إرسال</button>
         <button onclick="deleteMessages()" class="delete-msg">🗑️</button>
       </div>
